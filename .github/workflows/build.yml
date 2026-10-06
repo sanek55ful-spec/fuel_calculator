@@ -1,0 +1,50 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+          channel: 'stable'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Create Android project structure
+        run: |
+          flutter create --org com.fuelcalculator --project-name fuel_calculator --platforms=android temp_project
+          cp -r lib temp_project/
+          cp pubspec.yaml temp_project/pubspec.yaml
+
+      - name: Get dependencies
+        working-directory: temp_project
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: temp_project
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuel-calculator-apk
+          path: temp_project/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
