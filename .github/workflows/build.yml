@@ -31,7 +31,7 @@ jobs:
           cp -r lib temp_project/
           cp pubspec.yaml temp_project/pubspec.yaml
 
-      - name: Fix Gradle (JVM 17 + desugaring + compileSdk 34)
+      - name: Fix Gradle (JVM 17 + desugaring + compileSdk 36)
         working-directory: temp_project
         run: |
           cat > android/gradle.properties << 'EOF'
@@ -50,7 +50,7 @@ jobs:
 
           android {
               namespace = "com.fuelcalculator.fuel_calculator"
-              compileSdk = 34
+              compileSdk = 36
               ndkVersion = flutter.ndkVersion
 
               compileOptions {
