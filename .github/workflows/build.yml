@@ -23,9 +23,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+          cache: true
 
       - name: Create Android project structure
         run: |
