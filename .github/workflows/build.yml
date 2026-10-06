@@ -31,16 +31,14 @@ jobs:
           cp -r lib temp_project/
           cp pubspec.yaml temp_project/pubspec.yaml
 
-      - name: Fix Gradle (JVM 17 + desugaring + compileSdk 36)
+      - name: Get dependencies
+        working-directory: temp_project
+        run: flutter pub get
+
+      - name: Fix Gradle AND build APK (in one step)
         working-directory: temp_project
         run: |
-          cat > android/gradle.properties << 'EOF'
-          org.gradle.jvmargs=-Xmx4G
-          android.useAndroidX=true
-          android.enableJetifier=true
-          kotlin.jvm.target.validation.mode=warning
-          EOF
-
+          # Перезаписываем build.gradle ПОСЛЕ pub get, чтобы Flutter не сбросил настройки
           cat > android/app/build.gradle << 'EOF'
           plugins {
               id "com.android.application"
@@ -87,13 +85,16 @@ jobs:
           }
           EOF
 
-      - name: Get dependencies
-        working-directory: temp_project
-        run: flutter pub get
+          # Также перезаписываем gradle.properties
+          cat > android/gradle.properties << 'EOF'
+          org.gradle.jvmargs=-Xmx4G
+          android.useAndroidX=true
+          android.enableJetifier=true
+          kotlin.jvm.target.validation.mode=warning
+          EOF
 
-      - name: Build APK
-        working-directory: temp_project
-        run: flutter build apk --release
+          # Сразу запускаем сборку - чтобы никто не перезаписал наш build.gradle
+          flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
