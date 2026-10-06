@@ -31,39 +31,38 @@ jobs:
           cp -r lib temp_project/
           cp pubspec.yaml temp_project/pubspec.yaml
 
-      - name: Fix Kotlin JVM Target
+      - name: Fix Gradle (JVM 17 + core library desugaring)
         working-directory: temp_project
         run: |
-          # Настраиваем все модули на Java 17, чтобы Kotlin и Java совпадали
           cat > android/gradle.properties << 'EOF'
           org.gradle.jvmargs=-Xmx4G
           android.useAndroidX=true
           android.enableJetifier=true
           kotlin.jvm.target.validation.mode=warning
           EOF
-          
-          # Прописываем JVM Target 17 в build.gradle приложения
+
           cat > android/app/build.gradle << 'EOF'
           plugins {
               id "com.android.application"
               id "kotlin-android"
               id "dev.flutter.flutter-gradle-plugin"
           }
-          
+
           android {
               namespace = "com.fuelcalculator.fuel_calculator"
               compileSdk = flutter.compileSdkVersion
               ndkVersion = flutter.ndkVersion
-          
+
               compileOptions {
                   sourceCompatibility = JavaVersion.VERSION_17
                   targetCompatibility = JavaVersion.VERSION_17
+                  coreLibraryDesugaringEnabled true
               }
-          
+
               kotlinOptions {
                   jvmTarget = "17"
               }
-          
+
               defaultConfig {
                   applicationId = "com.fuelcalculator.fuel_calculator"
                   minSdk = 21
@@ -71,14 +70,18 @@ jobs:
                   versionCode = flutter.versionCode
                   versionName = flutter.versionName
               }
-          
+
               buildTypes {
                   release {
                       signingConfig = signingConfigs.debug
                   }
               }
           }
-          
+
+          dependencies {
+              coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+          }
+
           flutter {
               source = "../.."
           }
